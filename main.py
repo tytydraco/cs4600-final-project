@@ -23,3 +23,9 @@ class Person:
     def assign_other(self, other_person):
         # Sets the public key for the other communicator.
         self.other_pub_key = other_person.pub_key
+
+
+sender = Person()
+receiver = Person()
+sender.assign_other(receiver)
+receiver.assign_other(sender)
