@@ -8,6 +8,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Util.Padding import pad, unpad
 import base64
 
 
@@ -15,6 +16,9 @@ class Person:
     # A person owns an RSA key pair.
     pub_key = None
     priv_key = None
+
+    # Has an AES key.
+    aes_key = get_random_bytes(16)
 
     # And knows the other person's public key.
     other_pub_key = None
@@ -32,11 +36,11 @@ class Person:
         with open(filename, 'rb') as f:
             message = f.read()
 
-        aes_key = get_random_bytes(16)
-        aes = AES.new(aes_key, AES.MODE_EAX)
-        enc_message = aes.encrypt(message)
+        aes = AES.new(self.aes_key, AES.MODE_CBC, b'1234567890123456')
+        padded_message = pad(message, AES.block_size)
+        enc_message = aes.encrypt(padded_message)
         rsa = PKCS1_OAEP.new(self.pub_key)
-        enc_aes_key = rsa.encrypt(aes_key)
+        enc_aes_key = rsa.encrypt(self.aes_key)
 
         comms.send(enc_message)
         # comms.send(enc_aes_key)
