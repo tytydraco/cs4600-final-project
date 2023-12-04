@@ -42,7 +42,7 @@ class Person:
         rsa = PKCS1_OAEP.new(self.pub_key)
         enc_aes_key = rsa.encrypt(self.aes_key)
 
-        comms.send(enc_message)
+        comms.send(enc_message, enc_aes_key)
         # comms.send(enc_aes_key)
 
     def decrypt(self):
