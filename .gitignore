@@ -160,4 +160,5 @@ cython_debug/
 #.idea/
 
 # Others
-Transmitted_Data
+Transmitted_MSG_Data
+Transmitted_SIG_Data
