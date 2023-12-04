@@ -162,3 +162,4 @@ cython_debug/
 # Others
 Transmitted_MSG_Data
 Transmitted_SIG_Data
+Transmitted_DIG_Data
