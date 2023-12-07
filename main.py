@@ -1,5 +1,5 @@
 # Tyler Nijmeh
-# Jack <?????>
+# Jack Bui
 # CS4600.02
 # Final project
 
@@ -62,8 +62,27 @@ class Person:
 
     def decrypt(self):
         enc_message, signature, hmac_hexdigest = comms.read()
-        # TODO: do a comms.read() to get the enc message and dec it
-        print()
+
+        # Create RSA cipher using private key.
+        rsa = PKCS1_OAEP.new(self.priv_key)
+
+        # Decrypt AES key using RSA private key.
+        aes_key = rsa.decrypt(signature)
+
+        # Verify HMAC for integrity.
+        hmac = HMAC.new(aes_key, digestmod=SHA256)
+        hmac.update(enc_message)
+        if hmac_hexdigest != hmac.hexdigest():
+            print("Integrity check failed. The message may have been corrupted or tampered with.")
+            return
+
+        # Decrypt the message using AES.
+        aes = AES.new(aes_key, AES.MODE_CBC, b'1234567890123456')
+        decrypted_message = unpad(aes.decrypt(enc_message), AES.block_size)
+
+        # Print the decrypted message.
+        print("Decrypted Message:")
+        print(decrypted_message.decode('utf-8'))
 
 
 sender = Person()
