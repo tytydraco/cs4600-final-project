@@ -52,8 +52,12 @@ class Person:
         aes = AES.new(self.aes_key, AES.MODE_CBC, b'1234567890123456')
         enc_message = aes.encrypt(padded_message)
 
-        # Encrypt AES key with the RSA public key.
-        rsa = PKCS1_OAEP.new(self.pub_key)
+
+        # Create RSA cipher using public key.
+        rsa = PKCS1_OAEP.new(self.other_pub_key)
+
+        # Encrypt AES key with RSA public key for signature.
+
         signature = rsa.encrypt(self.aes_key)
 
         # Generate SHA256 Hashed-MAC for the message.
@@ -64,28 +68,37 @@ class Person:
         comms.send(enc_message, signature, hmac.hexdigest())
 
     def decrypt(self):
+        # Receive encrypted message, signature, and HMAC.
         enc_message, signature, hmac_hexdigest = comms.read()
 
         # Create RSA cipher using private key.
         rsa = PKCS1_OAEP.new(self.priv_key)
 
-        # Decrypt AES key using RSA private key.
-        aes_key = rsa.decrypt(signature)
+        try:
+            # Decrypt AES key using RSA private key.
+            aes_key = rsa.decrypt(signature)
 
-        # Verify HMAC for integrity.
-        hmac = HMAC.new(aes_key, digestmod=SHA256)
-        hmac.update(enc_message)
-        if hmac_hexdigest != hmac.hexdigest():
-            print("Integrity check failed. The message may have been corrupted or tampered with.")
-            return
+            # Verify HMAC using AES key.
+            hmac = HMAC.new(aes_key, digestmod=SHA256)
+            hmac.update(enc_message)
+            if hmac.hexdigest() != hmac_hexdigest:
+                raise ValueError("HMAC verification failed.")
 
-        # Decrypt the message using AES.
-        aes = AES.new(aes_key, AES.MODE_CBC, b'1234567890123456')
-        decrypted_message = unpad(aes.decrypt(enc_message), AES.block_size)
+            # AES using CBC mode with predefined IV.
+            aes = AES.new(aes_key, AES.MODE_CBC, b'1234567890123456')
 
-        # Print the decrypted message.
-        print("Decrypted Message:")
-        print(decrypted_message.decode('utf-8'))
+            # Decrypt message using AES.
+            padded_message = aes.decrypt(enc_message)
+
+            # Unpad message.
+            message = unpad(padded_message, AES.block_size)
+
+            # Print decrypted message.
+            print(message.decode())
+        except ValueError as e:
+            print("Decryption error:", str(e))
+
+        
 
 
 sender = Person()
