@@ -1,6 +1,6 @@
 # Tyler Nijmeh
 # Jack Bui
-# Kolass rexon 
+# Kolass rexon j
 # CS4600.02
 # Final project
 
